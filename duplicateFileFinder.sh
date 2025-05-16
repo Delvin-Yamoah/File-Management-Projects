@@ -1,12 +1,29 @@
 #!/bin/bash
 
-# The folder where the files are located
-DIR="$1"
-# Folder where you want to move duplicates (if empty, duplicates will just be deleted)
-DEST_DIR="$2"
+# Script to find and handle duplicate files in a directory.
+# The script will now prompt the user for the source and destination directories.
 
+# Prompt the user to enter the directory to check for duplicates
+read -p "Enter the directory to check for duplicate files: " DIR
+
+# Check if the directory is provided
 if [ -z "$DIR" ]; then
-  echo "Usage: $0 <folder> [destination_folder_to_move]"
+  echo "Error: Directory is required. Exiting."
+  exit 1
+fi
+
+# Check if the directory exists
+if [[ ! -d "$DIR" ]]; then
+  echo "Error: Directory '$DIR' does not exist or is not a directory. Exiting."
+  exit 1
+fi
+
+# Prompt the user to enter the destination directory (optional)
+read -p "Enter the destination directory to move duplicates (leave blank to delete): " DEST_DIR
+
+# If a destination directory is provided, check if it exists
+if [ -n "$DEST_DIR" ] && [[ ! -d "$DEST_DIR" ]]; then
+  echo "Error: Destination directory '$DEST_DIR' does not exist or is not a directory. Exiting."
   exit 1
 fi
 
@@ -33,17 +50,18 @@ for file in "$DIR"/*; do
         read -p "Choose an option (1/2/3): " choice
 
         case $choice in
-          1) 
+          1)
             rm -v "$file"  # Delete the file
             ;;
-          2) 
+          2)
             if [ -n "$DEST_DIR" ]; then
               mv -v "$file" "$DEST_DIR"  # Move to destination folder
             else
-              echo "No destination folder provided. Skipping move."
+              echo "No destination folder provided. Deleting duplicate."
+              rm -v "$file"
             fi
             ;;
-          3) 
+          3)
             echo "Skipping $file."
             ;;
           *)

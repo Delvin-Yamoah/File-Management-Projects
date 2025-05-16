@@ -1,39 +1,66 @@
 #!/bin/bash
 
-DIR="$1"
-PREFIX="$2"
-SUFFIX="$3"
-USE_COUNTER="$4"   # "yes" or "no"
-USE_DATE="$5"      # "yes" or "no"
-EXT="$6"           # optional (e.g. ".txt")
+# Script to rename files in a directory with options for prefix, suffix, counter, date, and extension.
 
+read -p "Enter the directory to rename files in: " DIR
 if [ -z "$DIR" ]; then
-  echo "Usage: $0 <folder> <prefix> <suffix> <counter yes/no> <date yes/no> [extension]"
+  echo "Error: Directory cannot be empty."
+  exit 1
+fi
+if [[ ! -d "$DIR" ]]; then
+  echo "Error: Directory '$DIR' does not exist or is not a directory."
   exit 1
 fi
 
-DATE=$(date +%Y-%m-%d)
+read -p "Enter the prefix (leave empty for none): " PREFIX
+read -p "Enter the suffix (leave empty for none): " SUFFIX
+
+while true; do
+  read -p "Use counter? (yes/no): " USE_COUNTER
+  case "$USE_COUNTER" in
+    [yY]es|[yY]) USE_COUNTER="yes"; break ;;
+    [nN]o|[nN])  USE_COUNTER="no"; break ;;
+    *) echo "Invalid input. Please enter 'yes' or 'no'.";;
+  esac
+done
+
+while true; do
+  read -p "Use date? (yes/no): " USE_DATE
+  case "$USE_DATE" in
+    [yY]es|[yY]) USE_DATE="yes"; break ;;
+    [nN]o|[nN])  USE_DATE="no"; break ;;
+    *) echo "Invalid input. Please enter 'yes' or 'no'.";;
+  esac
+done
+
+read -p "Enter the optional extension to filter (e.g., .txt, leave empty for all): " EXT
+
+DATE=$(date +%Y-%m-%d_%H-%M-%S) # Include time as well
 COUNT=1
 
 for FILE in "$DIR"/*; do
-  BASENAME=$(basename "$FILE")
-  NAME="${BASENAME%.*}"
-  EXTENSION=".${BASENAME##*.}"
+  if [ -f "$FILE" ]; then
+    BASENAME=$(basename "$FILE")
+    NAME="${BASENAME%.*}"
+    EXTENSION=".${BASENAME##*.}"
 
-  if [ -n "$EXT" ] && [[ "$EXTENSION" != "$EXT" ]]; then
-    continue
+    if [ -n "$EXT" ] && [[ "$EXTENSION" != "$EXT" ]]; then
+      continue
+    fi
+
+    NEWNAME="${PREFIX}${NAME}${SUFFIX}"
+
+    if [ "$USE_DATE" = "yes" ]; then
+      NEWNAME="${NEWNAME}_${DATE}"
+    fi
+
+    if [ "$USE_COUNTER" = "yes" ]; then
+      NEWNAME="${NEWNAME}_$(printf "%03d" $COUNT)"
+      COUNT=$((COUNT + 1))
+    fi
+
+    mv -v "$FILE" "$DIR/${NEWNAME}${EXTENSION}"
   fi
-
-  NEWNAME="${PREFIX}${NAME}${SUFFIX}"
-
-  if [ "$USE_DATE" = "yes" ]; then
-    NEWNAME="${NEWNAME}_${DATE}"
-  fi
-
-  if [ "$USE_COUNTER" = "yes" ]; then
-    NEWNAME="${NEWNAME}_$(printf "%03d" $COUNT)"
-    COUNT=$((COUNT + 1))
-  fi
-
-  mv -v "$FILE" "$DIR/${NEWNAME}${EXTENSION}"
 done
+
+echo "File renaming complete in directory: $DIR"

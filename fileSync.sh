@@ -2,18 +2,17 @@
 
 # This function shows how to use the script if the user doesn't provide folder paths
 usage() {
-  echo "Usage: $0 <folder1> <folder2>"
+  echo "Usage: $0"
   echo "This script will sync files between two folders."
+  echo "You will be prompted to enter the folder paths."
   exit 1
 }
 
-# Make sure the user gave two folders as input
-if [ $# -ne 2 ]; then
-  usage
-fi
-
-FOLDER1=$1
-FOLDER2=$2
+# Prompt the user for the folder paths
+echo "Enter the path for the first folder (e.g., /home/user/folder1):"
+read FOLDER1
+echo "Enter the path for the second folder (e.g., /home/user/folder2):"
+read FOLDER2
 
 # Check if both folders exist
 if [ ! -d "$FOLDER1" ] || [ ! -d "$FOLDER2" ]; then
@@ -62,3 +61,15 @@ sync_folder2_to_folder1() {
         # File in FOLDER2 is newer, copy it to FOLDER1
         echo "Copying $filename from $FOLDER2 to $FOLDER1"
         cp "$file2" "$file1"
+      fi
+    else
+      # If the file doesn't exist in FOLDER1, copy it
+      echo "Copying $filename from $FOLDER2 to $FOLDER1"
+      cp "$file2" "$file1"
+    fi
+  done
+}
+
+# Call the functions to sync in both directions
+sync_folder1_to_folder2
+sync_folder2_to_folder1

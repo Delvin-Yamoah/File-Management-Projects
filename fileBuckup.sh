@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ask for the source folder to back up
-echo "Enter the source folder you want to back up (e.g., /home/user/Documents):"
+echo "Enter the source folder you want to back up (e.g., /home/user/Downloads):"
 read SOURCE
 
 # Ask for the destination folder where you want to store the backup
